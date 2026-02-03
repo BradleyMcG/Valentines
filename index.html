@@ -57,6 +57,7 @@
       z-index: 2;
       transform: rotate(var(--rot, 0deg));
       animation: float 6s ease-in-out infinite;
+      transform-origin: center;
     }
 
     .left.top    { left: 2vw;  top: 10vh; animation-delay: 0s; }
@@ -69,15 +70,16 @@
       50%     { transform: translateY(-18px) rotate(var(--rot, 0deg)); }
     }
 
-    /* ---------- CONFETTI ---------- */
+    /* ---------- CONFETTI CANVAS ---------- */
     #confettiCanvas {
       position: fixed;
       inset: 0;
+      width: 100vw;
+      height: 100vh;
       pointer-events: none;
       z-index: 9999;
     }
 
-    /* ---------- CARD ---------- */
     .card {
       width: min(720px, 92vw);
       padding: 26px 22px;
@@ -109,7 +111,6 @@
       margin: 12px 0 18px;
     }
 
-    /* ---------- BUTTONS ---------- */
     .button-zone {
       position: relative;
       width: min(520px, 92%);
@@ -131,21 +132,13 @@
       box-shadow: 0 10px 24px rgba(0,0,0,.14);
       user-select: none;
       -webkit-tap-highlight-color: transparent;
+      transition: transform .12s ease, background .12s ease;
     }
 
-    #yesBtn {
-      left: 18%;
-      background: var(--yes);
-      color: #fff;
-    }
-
+    #yesBtn { left: 18%; background: var(--yes); color: #fff; }
     #yesBtn:hover { background: var(--yesHover); }
 
-    #noBtn {
-      left: 62%;
-      background: #e5e7eb;
-      color: #111827;
-    }
+    #noBtn { left: 62%; background: #e5e7eb; color: #111827; }
 
     .hint {
       margin-top: 10px;
@@ -168,6 +161,14 @@
       from { transform: scale(.96); opacity: 0; }
       to { transform: scale(1); opacity: 1; }
     }
+
+    @media (max-width: 520px) {
+      .heart-img { width: 240px; height: 240px; }
+      .left.top { left: -6vw; top: 8vh; }
+      .right.top { right: -6vw; top: 8vh; }
+      .left.bottom { left: -4vw; bottom: 8vh; }
+      .right.bottom { right: -4vw; bottom: 8vh; }
+    }
   </style>
 </head>
 
@@ -175,17 +176,16 @@
   <canvas id="confettiCanvas"></canvas>
 
   <!-- HEART PHOTOS -->
-  <img src="candi1.jpg" class="heart-img left top">
-  <img src="candi2.jpg" class="heart-img left bottom">
-  <img src="candi3.jpg" class="heart-img right top">
-  <img src="candi4.jpg" class="heart-img right bottom">
+  <img src="candi1.jpg" class="heart-img left top" alt="Candice 1">
+  <img src="candi2.jpg" class="heart-img left bottom" alt="Candice 2">
+  <img src="candi3.jpg" class="heart-img right top" alt="Candice 3">
+  <img src="candi4.jpg" class="heart-img right bottom" alt="Candice 4">
 
   <!-- Hidden YouTube player -->
-  <div id="ytPlayer" style="position: fixed; left: -9999px;"></div>
+  <div id="ytPlayer" style="position: fixed; left:-9999px; top:-9999px;"></div>
 
   <main class="card">
-    <!-- RAT IMAGE -->
-    <img src="rat.png" alt="Cute rat with heart" class="art">
+    <img src="rat.png" alt="Cute rat with heart" class="art" />
 
     <h1>Candice will you be my valentine?</h1>
 
@@ -197,8 +197,12 @@
     <div class="hint" id="hint">“No” isn't an option 😊</div>
 
     <section class="result" id="result">
-      <h2>YAY!!!!! and many more Valentines to come!!!</h2>
-      <img src="https://media.giphy.com/media/26ufdipQqU2lhNA4g/giphy.gif" width="320">
+      <h2>YAY!!!!! and many more Valentine’s Days to come!!!</h2>
+      <img
+        src="https://media.giphy.com/media/26ufdipQqU2lhNA4g/giphy.gif"
+        alt="Fireworks"
+        style="width:min(380px,90vw); display:block; margin:0 auto;"
+      />
     </section>
   </main>
 
@@ -218,23 +222,59 @@
 
     /* ---------- CONFETTI ---------- */
     const confettiCanvas = document.getElementById("confettiCanvas");
-    const confettiInstance = confetti.create(confettiCanvas, { resize: true });
 
-    function blastConfetti() {
-      confettiInstance({
-        particleCount: 300,
-        spread: 140,
-        startVelocity: 60,
-        origin: { x: 0.5, y: 0.55 }
-      });
+    function resizeConfettiCanvas() {
+      const dpr = Math.max(1, window.devicePixelRatio || 1);
+      confettiCanvas.width = Math.floor(window.innerWidth * dpr);
+      confettiCanvas.height = Math.floor(window.innerHeight * dpr);
+      confettiCanvas.style.width = "100vw";
+      confettiCanvas.style.height = "100vh";
     }
 
-    /* ---------- NO BUTTON RUNS ---------- */
-    let yesScale = 1;
+    resizeConfettiCanvas();
+    window.addEventListener("resize", resizeConfettiCanvas);
+    window.addEventListener("orientationchange", () => setTimeout(resizeConfettiCanvas, 150));
 
+    const confettiInstance = confetti.create(confettiCanvas, {
+      resize: false,
+      useWorker: true
+    });
+
+    function fullScreenConfetti() {
+      const end = Date.now() + 1600;
+
+      (function frame() {
+        confettiInstance({
+          particleCount: 12,
+          spread: 90,
+          startVelocity: 45,
+          ticks: 180,
+          origin: { x: Math.random(), y: Math.random() * 0.3 }
+        });
+        if (Date.now() < end) requestAnimationFrame(frame);
+      })();
+
+      setTimeout(() => {
+        confettiInstance({
+          particleCount: 300,
+          spread: 140,
+          startVelocity: 60,
+          ticks: 220,
+          origin: { x: 0.5, y: 0.55 }
+        });
+      }, 300);
+    }
+
+    /* ---------- YES BUTTON GROWS ---------- */
+    let yesScale = 1;
     function growYes() {
       yesScale = Math.min(2.2, yesScale + 0.1);
       yesBtn.style.transform = `translateY(-50%) scale(${yesScale})`;
+    }
+
+    /* ---------- NO BUTTON RUNS AWAY ---------- */
+    function clamp(n, min, max) {
+      return Math.max(min, Math.min(max, n));
     }
 
     function moveNo(px, py) {
@@ -244,13 +284,14 @@
       let dx = (b.left + b.width / 2) - px;
       let dy = (b.top + b.height / 2) - py;
       let mag = Math.hypot(dx, dy) || 1;
-      dx /= mag; dy /= mag;
+      dx /= mag;
+      dy /= mag;
 
       let newLeft = (b.left - z.left) + dx * 150;
       let newTop  = (b.top - z.top) + dy * 150;
 
-      newLeft = Math.max(0, Math.min(newLeft, z.width - b.width));
-      newTop  = Math.max(0, Math.min(newTop, z.height - b.height));
+      newLeft = clamp(newLeft, 0, z.width - b.width);
+      newTop  = clamp(newTop, 0, z.height - b.height);
 
       noBtn.style.left = newLeft + "px";
       noBtn.style.top = newTop + "px";
@@ -270,12 +311,66 @@
 
     noBtn.addEventListener("click", e => e.preventDefault());
 
+    /* ---------- YOUTUBE ---------- */
+    const VIDEO_ID = "N5PdvXVXh1c";
+    const START_SECONDS = 20;
+
+    let ytPlayer = null;
+    let ytReady = false;
+
+    window.onYouTubeIframeAPIReady = () => {
+      ytPlayer = new YT.Player("ytPlayer", {
+        videoId: VIDEO_ID,
+        playerVars: {
+          autoplay: 0,
+          controls: 0,
+          disablekb: 1,
+          fs: 0,
+          modestbranding: 1,
+          playsinline: 1,
+          rel: 0
+        },
+        events: {
+          onReady: (e) => {
+            ytReady = true;
+            e.target.cueVideoById({ videoId: VIDEO_ID, startSeconds: START_SECONDS });
+            e.target.setVolume(100);
+          }
+        }
+      });
+    };
+
     /* ---------- YES CLICK ---------- */
-    yesBtn.addEventListener("click", () => {
+    yesBtn.addEventListener("click", async () => {
       zone.style.display = "none";
       hint.style.display = "none";
       result.style.display = "block";
-      blastConfetti();
+
+      resizeConfettiCanvas();
+      fullScreenConfetti();
+
+      // The most reliable way on iOS is loadVideoById (not seekTo+play)
+      if (ytReady && ytPlayer) {
+        try {
+          ytPlayer.unMute();
+          ytPlayer.setVolume(100);
+          ytPlayer.loadVideoById({ videoId: VIDEO_ID, startSeconds: START_SECONDS });
+          const res = ytPlayer.playVideo();
+
+          // If blocked anyway, fallback
+          setTimeout(() => {
+            // Player state: -1 unstarted, 1 playing, 2 paused, 5 cued
+            const st = ytPlayer.getPlayerState?.();
+            if (st !== 1) {
+              window.open(`https://www.youtube.com/watch?v=${VIDEO_ID}&t=${START_SECONDS}s`, "_blank");
+            }
+          }, 900);
+        } catch {
+          window.open(`https://www.youtube.com/watch?v=${VIDEO_ID}&t=${START_SECONDS}s`, "_blank");
+        }
+      } else {
+        window.open(`https://www.youtube.com/watch?v=${VIDEO_ID}&t=${START_SECONDS}s`, "_blank");
+      }
     });
   </script>
 </body>
