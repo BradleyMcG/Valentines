@@ -5,10 +5,10 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <title>Will you be my Valentine?</title>
 
-  <!-- Confetti library -->
+  <!-- Confetti -->
   <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
 
-  <!-- YouTube IFrame API (loads immediately so playback is instant on click) -->
+  <!-- YouTube IFrame API -->
   <script src="https://www.youtube.com/iframe_api"></script>
 
   <style>
@@ -33,7 +33,37 @@
       padding: 16px;
     }
 
-    /* FULL-SCREEN CONFETTI CANVAS */
+    /* ---------- FLOATING HEART IMAGES ---------- */
+    .heart-img {
+      position: fixed;
+      width: 120px;
+      aspect-ratio: 1;
+      object-fit: cover;
+      clip-path: path(
+        "M60 110 C20 80 0 60 0 35
+         C0 15 15 0 35 0
+         C50 0 60 12 60 12
+         C60 12 70 0 85 0
+         C105 0 120 15 120 35
+         C120 60 100 80 60 110 Z"
+      );
+      filter: drop-shadow(0 10px 20px rgba(0,0,0,.25));
+      pointer-events: none;
+      z-index: 2;
+      animation: float 6s ease-in-out infinite;
+    }
+
+    .left.top    { left: 6vw;  top: 14vh; animation-delay: 0s; }
+    .left.bottom { left: 8vw;  bottom: 16vh; animation-delay: 1s; }
+    .right.top   { right: 6vw; top: 14vh; animation-delay: .5s; }
+    .right.bottom{ right: 8vw; bottom: 16vh; animation-delay: 1.5s; }
+
+    @keyframes float {
+      0%,100% { transform: translateY(0); }
+      50% { transform: translateY(-14px); }
+    }
+
+    /* ---------- CONFETTI ---------- */
     #confettiCanvas {
       position: fixed;
       inset: 0;
@@ -51,13 +81,8 @@
       border-radius: 22px;
       text-align: center;
       box-shadow: 0 18px 60px rgba(0,0,0,.15);
-    }
-
-    .art {
-      width: min(260px, 80vw);
-      margin: 0 auto 10px;
-      display: block;
-      filter: drop-shadow(0 10px 14px rgba(0,0,0,.12));
+      position: relative;
+      z-index: 3;
     }
 
     h1 {
@@ -84,8 +109,6 @@
       border: none;
       cursor: pointer;
       box-shadow: 0 10px 24px rgba(0,0,0,.14);
-      user-select: none;
-      -webkit-tap-highlight-color: transparent;
       transition: transform .12s ease, background .12s ease;
     }
 
@@ -94,6 +117,7 @@
       background: var(--yes);
       color: #fff;
     }
+
     #yesBtn:hover { background: var(--yesHover); }
 
     #noBtn {
@@ -135,48 +159,16 @@
 <body>
   <canvas id="confettiCanvas"></canvas>
 
-  <!-- Hidden YouTube player (preloaded on page load) -->
+  <!-- HEART IMAGES -->
+  <img src="candi1.jpg" class="heart-img left top" />
+  <img src="candi2.jpg" class="heart-img left bottom" />
+  <img src="candi3.jpg" class="heart-img right top" />
+  <img src="candi4.jpg" class="heart-img right bottom" />
+
+  <!-- Hidden YouTube player -->
   <div id="ytPlayer" style="position: fixed; left: -9999px; top: -9999px;"></div>
 
   <main class="card">
-    <!-- ANIMAL WITH HEART -->
-    <svg class="art" viewBox="0 0 320 240" xmlns="http://www.w3.org/2000/svg">
-      <defs>
-        <linearGradient id="fur" x1="0" x2="1">
-          <stop offset="0" stop-color="#f7c7a1"/>
-          <stop offset="1" stop-color="#f2a97b"/>
-        </linearGradient>
-        <linearGradient id="heart" x1="0" x2="1">
-          <stop offset="0" stop-color="#ff4d7d"/>
-          <stop offset="1" stop-color="#ff1f68"/>
-        </linearGradient>
-      </defs>
-
-      <path d="M250 50 C250 33 270 25 282 38
-               C294 25 314 33 314 50
-               C314 78 282 92 282 106
-               C282 92 250 78 250 50Z"
-            fill="url(#heart)"/>
-
-      <path d="M90 120 C90 70 140 40 190 60
-               C240 40 290 70 290 120
-               C290 180 240 210 190 210
-               C140 210 90 180 90 120Z"
-            fill="url(#fur)"/>
-
-      <path d="M110 92 L95 55 L140 78 Z" fill="#f2a97b"/>
-      <path d="M270 92 L285 55 L240 78 Z" fill="#f2a97b"/>
-
-      <circle cx="160" cy="130" r="8"/>
-      <circle cx="220" cy="130" r="8"/>
-
-      <path d="M190 144 C186 144 182 148 182 152
-               C182 160 190 164 190 170
-               C190 164 198 160 198 152
-               C198 148 194 144 190 144Z"
-            fill="#ff7aa2"/>
-    </svg>
-
     <h1>Candice will you be my valentine?</h1>
 
     <section class="button-zone" id="zone">
@@ -188,11 +180,9 @@
 
     <section class="result" id="result">
       <h2>YAY!!!!</h2>
-      <img
-        class="fireworks"
+      <img class="fireworks"
         src="https://media.giphy.com/media/26ufdipQqU2lhNA4g/giphy.gif"
-        alt="Fireworks"
-      />
+        alt="Fireworks" />
     </section>
   </main>
 
@@ -203,20 +193,15 @@
     const result = document.getElementById("result");
     const hint = document.getElementById("hint");
 
-    /* ---------- CONFETTI ---------- */
+    /* CONFETTI */
     const confettiCanvas = document.getElementById("confettiCanvas");
-
     function resizeConfettiCanvas() {
       const dpr = Math.max(1, window.devicePixelRatio || 1);
-      confettiCanvas.width = Math.floor(window.innerWidth * dpr);
-      confettiCanvas.height = Math.floor(window.innerHeight * dpr);
-      confettiCanvas.style.width = "100vw";
-      confettiCanvas.style.height = "100vh";
+      confettiCanvas.width = innerWidth * dpr;
+      confettiCanvas.height = innerHeight * dpr;
     }
-
     resizeConfettiCanvas();
     window.addEventListener("resize", resizeConfettiCanvas);
-    window.addEventListener("orientationchange", () => setTimeout(resizeConfettiCanvas, 150));
 
     const confettiInstance = confetti.create(confettiCanvas, {
       resize: false,
@@ -225,7 +210,6 @@
 
     function fullScreenConfetti() {
       const end = Date.now() + 1600;
-
       (function frame() {
         confettiInstance({
           particleCount: 12,
@@ -248,14 +232,14 @@
       }, 300);
     }
 
-    /* ---------- YES BUTTON GROWS ---------- */
+    /* YES GROWS */
     let yesScale = 1;
     function growYes() {
       yesScale = Math.min(2.2, yesScale + 0.1);
       yesBtn.style.transform = `translateY(-50%) scale(${yesScale})`;
     }
 
-    /* ---------- NO BUTTON RUNS AWAY (original physics) ---------- */
+    /* NO ESCAPES */
     function clamp(n, min, max) {
       return Math.max(min, Math.min(max, n));
     }
@@ -263,23 +247,17 @@
     function moveNo(px, py) {
       const z = zone.getBoundingClientRect();
       const b = noBtn.getBoundingClientRect();
-
       let dx = (b.left + b.width / 2) - px;
       let dy = (b.top + b.height / 2) - py;
       let mag = Math.hypot(dx, dy) || 1;
-      dx /= mag;
-      dy /= mag;
+      dx /= mag; dy /= mag;
 
       let newLeft = (b.left - z.left) + dx * 150;
       let newTop  = (b.top - z.top) + dy * 150;
 
-      newLeft = clamp(newLeft, 0, z.width - b.width);
-      newTop  = clamp(newTop, 0, z.height - b.height);
-
-      noBtn.style.left = newLeft + "px";
-      noBtn.style.top = newTop + "px";
+      noBtn.style.left = clamp(newLeft, 0, z.width - b.width) + "px";
+      noBtn.style.top  = clamp(newTop, 0, z.height - b.height) + "px";
       noBtn.style.transform = "none";
-
       growYes();
     }
 
@@ -294,30 +272,18 @@
 
     noBtn.addEventListener("click", e => e.preventDefault());
 
-    /* ---------- YOUTUBE (PRELOAD AT 0:20) ---------- */
+    /* YOUTUBE */
     const VIDEO_ID = "N5PdvXVXh1c";
     const START_SECONDS = 20;
+    let ytPlayer, ytReady = false;
 
-    let ytPlayer = null;
-    let ytReady = false;
-
-    // Called automatically by the YouTube IFrame API
     window.onYouTubeIframeAPIReady = () => {
       ytPlayer = new YT.Player("ytPlayer", {
         videoId: VIDEO_ID,
-        playerVars: {
-          autoplay: 0,
-          controls: 0,
-          disablekb: 1,
-          fs: 0,
-          modestbranding: 1,
-          playsinline: 1,
-          rel: 0
-        },
+        playerVars: { playsinline: 1 },
         events: {
-          onReady: (e) => {
+          onReady: e => {
             ytReady = true;
-            // Preload/cue at 20s WITHOUT playing
             e.target.cueVideoById({ videoId: VIDEO_ID, startSeconds: START_SECONDS });
             e.target.setVolume(100);
           }
@@ -325,24 +291,15 @@
       });
     };
 
-    /* ---------- YES CLICK ---------- */
     yesBtn.addEventListener("click", () => {
       zone.style.display = "none";
       hint.style.display = "none";
       result.style.display = "block";
-
-      resizeConfettiCanvas();
       fullScreenConfetti();
 
-      // Start music instantly (already preloaded), at 0:20
-      if (ytReady && ytPlayer) {
+      if (ytReady) {
         ytPlayer.seekTo(START_SECONDS, true);
-        ytPlayer.unMute();
-        ytPlayer.setVolume(100);
         ytPlayer.playVideo();
-      } else {
-        // Fallback (rare): open YouTube at 0:20
-        window.open(`https://www.youtube.com/watch?v=${VIDEO_ID}&t=${START_SECONDS}s`, "_blank");
       }
     });
   </script>
