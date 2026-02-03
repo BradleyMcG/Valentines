@@ -8,7 +8,7 @@
   <!-- Confetti library -->
   <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
 
-  <!-- YouTube IFrame API (loads immediately so playback is instant on click) -->
+  <!-- YouTube IFrame API -->
   <script src="https://www.youtube.com/iframe_api"></script>
 
   <style>
@@ -36,14 +36,10 @@
     /* ---------- HEART PHOTOS ---------- */
     .heart-img {
       position: fixed;
-      width: 560px;              /* 3x bigger */
+      width: 560px;
       height: 560px;
-
-      /* Fit better */
       object-fit: cover;
-      object-position: center 10%; /* lift face a bit upward (tweak if needed) */
-
-      /* Heart shape */
+      object-position: center 10%;
       clip-path: polygon(
         50% 90%,
         10% 55%,
@@ -56,15 +52,11 @@
         100% 35%,
         90% 55%
       );
-
       filter: drop-shadow(0 18px 30px rgba(0,0,0,.35));
       pointer-events: none;
       z-index: 2;
-
-      /* We'll add random rotation in JS using --rot */
       transform: rotate(var(--rot, 0deg));
       animation: float 6s ease-in-out infinite;
-      transform-origin: center;
     }
 
     .left.top    { left: 2vw;  top: 10vh; animation-delay: 0s; }
@@ -77,16 +69,15 @@
       50%     { transform: translateY(-18px) rotate(var(--rot, 0deg)); }
     }
 
-    /* ---------- CONFETTI CANVAS ---------- */
+    /* ---------- CONFETTI ---------- */
     #confettiCanvas {
       position: fixed;
       inset: 0;
-      width: 100vw;
-      height: 100vh;
       pointer-events: none;
       z-index: 9999;
     }
 
+    /* ---------- CARD ---------- */
     .card {
       width: min(720px, 92vw);
       padding: 26px 22px;
@@ -99,11 +90,18 @@
       z-index: 3;
     }
 
+    /* ---------- RAT IMAGE ---------- */
     .art {
       width: min(260px, 80vw);
       margin: 0 auto 10px;
       display: block;
       filter: drop-shadow(0 10px 14px rgba(0,0,0,.12));
+      animation: bob 2.6s ease-in-out infinite;
+    }
+
+    @keyframes bob {
+      0%,100% { transform: translateY(0); }
+      50% { transform: translateY(-6px); }
     }
 
     h1 {
@@ -111,6 +109,7 @@
       margin: 12px 0 18px;
     }
 
+    /* ---------- BUTTONS ---------- */
     .button-zone {
       position: relative;
       width: min(520px, 92%);
@@ -132,7 +131,6 @@
       box-shadow: 0 10px 24px rgba(0,0,0,.14);
       user-select: none;
       -webkit-tap-highlight-color: transparent;
-      transition: transform .12s ease, background .12s ease;
     }
 
     #yesBtn {
@@ -140,6 +138,7 @@
       background: var(--yes);
       color: #fff;
     }
+
     #yesBtn:hover { background: var(--yesHover); }
 
     #noBtn {
@@ -165,24 +164,9 @@
       margin: 10px 0;
     }
 
-    .fireworks {
-      width: min(380px, 90vw);
-      margin: 0 auto;
-      display: block;
-    }
-
     @keyframes pop {
       from { transform: scale(.96); opacity: 0; }
       to { transform: scale(1); opacity: 1; }
-    }
-
-    /* Optional: slightly smaller hearts on small screens */
-    @media (max-width: 520px) {
-      .heart-img { width: 240px; height: 240px; }
-      .left.top { left: -6vw; top: 8vh; }
-      .right.top { right: -6vw; top: 8vh; }
-      .left.bottom { left: -4vw; bottom: 8vh; }
-      .right.bottom { right: -4vw; bottom: 8vh; }
     }
   </style>
 </head>
@@ -191,52 +175,17 @@
   <canvas id="confettiCanvas"></canvas>
 
   <!-- HEART PHOTOS -->
-  <img src="candi1.jpg" class="heart-img left top" alt="Candice 1">
-  <img src="candi2.jpg" class="heart-img left bottom" alt="Candice 2">
-  <img src="candi3.jpg" class="heart-img right top" alt="Candice 3">
-  <img src="candi4.jpg" class="heart-img right bottom" alt="Candice 4">
+  <img src="candi1.jpg" class="heart-img left top">
+  <img src="candi2.jpg" class="heart-img left bottom">
+  <img src="candi3.jpg" class="heart-img right top">
+  <img src="candi4.jpg" class="heart-img right bottom">
 
-  <!-- Hidden YouTube player (preloaded on page load) -->
-  <div id="ytPlayer" style="position: fixed; left: -9999px; top: -9999px;"></div>
+  <!-- Hidden YouTube player -->
+  <div id="ytPlayer" style="position: fixed; left: -9999px;"></div>
 
   <main class="card">
-    <!-- ANIMAL WITH HEART -->
-    <svg class="art" viewBox="0 0 320 240" xmlns="http://www.w3.org/2000/svg">
-      <defs>
-        <linearGradient id="fur" x1="0" x2="1">
-          <stop offset="0" stop-color="#f7c7a1"/>
-          <stop offset="1" stop-color="#f2a97b"/>
-        </linearGradient>
-        <linearGradient id="heart" x1="0" x2="1">
-          <stop offset="0" stop-color="#ff4d7d"/>
-          <stop offset="1" stop-color="#ff1f68"/>
-        </linearGradient>
-      </defs>
-
-      <path d="M250 50 C250 33 270 25 282 38
-               C294 25 314 33 314 50
-               C314 78 282 92 282 106
-               C282 92 250 78 250 50Z"
-            fill="url(#heart)"/>
-
-      <path d="M90 120 C90 70 140 40 190 60
-               C240 40 290 70 290 120
-               C290 180 240 210 190 210
-               C140 210 90 180 90 120Z"
-            fill="url(#fur)"/>
-
-      <path d="M110 92 L95 55 L140 78 Z" fill="#f2a97b"/>
-      <path d="M270 92 L285 55 L240 78 Z" fill="#f2a97b"/>
-
-      <circle cx="160" cy="130" r="8"/>
-      <circle cx="220" cy="130" r="8"/>
-
-      <path d="M190 144 C186 144 182 148 182 152
-               C182 160 190 164 190 170
-               C190 164 198 160 198 152
-               C198 148 194 144 190 144Z"
-            fill="#ff7aa2"/>
-    </svg>
+    <!-- RAT IMAGE -->
+    <img src="rat.png" alt="Cute rat with heart" class="art">
 
     <h1>Candice will you be my valentine?</h1>
 
@@ -249,11 +198,7 @@
 
     <section class="result" id="result">
       <h2>YAY!!!!! and many more Valentines to come!!!</h2>
-      <img
-        class="fireworks"
-        src="https://media.giphy.com/media/26ufdipQqU2lhNA4g/giphy.gif"
-        alt="Fireworks"
-      />
+      <img src="https://media.giphy.com/media/26ufdipQqU2lhNA4g/giphy.gif" width="320">
     </section>
   </main>
 
@@ -264,72 +209,32 @@
     const result = document.getElementById("result");
     const hint = document.getElementById("hint");
 
-    /* ---------- RANDOM HEART ROTATION (on load) ---------- */
+    /* ---------- RANDOM HEART ROTATION ---------- */
     document.querySelectorAll(".heart-img").forEach((img, i) => {
-      // random angle between -18 and +18 degrees
       const angle = (Math.random() * 36) - 18;
-
-      // Slightly different default angles per side so it's not symmetric
       const nudge = (i % 2 === 0) ? -4 : 4;
-
       img.style.setProperty("--rot", (angle + nudge) + "deg");
     });
 
     /* ---------- CONFETTI ---------- */
     const confettiCanvas = document.getElementById("confettiCanvas");
+    const confettiInstance = confetti.create(confettiCanvas, { resize: true });
 
-    function resizeConfettiCanvas() {
-      const dpr = Math.max(1, window.devicePixelRatio || 1);
-      confettiCanvas.width = Math.floor(window.innerWidth * dpr);
-      confettiCanvas.height = Math.floor(window.innerHeight * dpr);
-      confettiCanvas.style.width = "100vw";
-      confettiCanvas.style.height = "100vh";
+    function blastConfetti() {
+      confettiInstance({
+        particleCount: 300,
+        spread: 140,
+        startVelocity: 60,
+        origin: { x: 0.5, y: 0.55 }
+      });
     }
 
-    resizeConfettiCanvas();
-    window.addEventListener("resize", resizeConfettiCanvas);
-    window.addEventListener("orientationchange", () => setTimeout(resizeConfettiCanvas, 150));
-
-    const confettiInstance = confetti.create(confettiCanvas, {
-      resize: false,
-      useWorker: true
-    });
-
-    function fullScreenConfetti() {
-      const end = Date.now() + 1600;
-
-      (function frame() {
-        confettiInstance({
-          particleCount: 12,
-          spread: 90,
-          startVelocity: 45,
-          ticks: 180,
-          origin: { x: Math.random(), y: Math.random() * 0.3 }
-        });
-        if (Date.now() < end) requestAnimationFrame(frame);
-      })();
-
-      setTimeout(() => {
-        confettiInstance({
-          particleCount: 300,
-          spread: 140,
-          startVelocity: 60,
-          ticks: 220,
-          origin: { x: 0.5, y: 0.55 }
-        });
-      }, 300);
-    }
-
-    /* ---------- YES BUTTON GROWS ---------- */
+    /* ---------- NO BUTTON RUNS ---------- */
     let yesScale = 1;
+
     function growYes() {
       yesScale = Math.min(2.2, yesScale + 0.1);
       yesBtn.style.transform = `translateY(-50%) scale(${yesScale})`;
-    }
-
-    /* ---------- NO BUTTON RUNS AWAY ---------- */
-    function clamp(n, min, max) {
-      return Math.max(min, Math.min(max, n));
     }
 
     function moveNo(px, py) {
@@ -339,14 +244,13 @@
       let dx = (b.left + b.width / 2) - px;
       let dy = (b.top + b.height / 2) - py;
       let mag = Math.hypot(dx, dy) || 1;
-      dx /= mag;
-      dy /= mag;
+      dx /= mag; dy /= mag;
 
       let newLeft = (b.left - z.left) + dx * 150;
       let newTop  = (b.top - z.top) + dy * 150;
 
-      newLeft = clamp(newLeft, 0, z.width - b.width);
-      newTop  = clamp(newTop, 0, z.height - b.height);
+      newLeft = Math.max(0, Math.min(newLeft, z.width - b.width));
+      newTop  = Math.max(0, Math.min(newTop, z.height - b.height));
 
       noBtn.style.left = newLeft + "px";
       noBtn.style.top = newTop + "px";
@@ -366,59 +270,13 @@
 
     noBtn.addEventListener("click", e => e.preventDefault());
 
-    /* ---------- YOUTUBE (PRELOAD AT 0:20) ---------- */
-    const VIDEO_ID = "N5PdvXVXh1c";
-    const START_SECONDS = 20;
-
-    let ytPlayer = null;
-    let ytReady = false;
-
-    window.onYouTubeIframeAPIReady = () => {
-      ytPlayer = new YT.Player("ytPlayer", {
-        videoId: VIDEO_ID,
-        playerVars: {
-          autoplay: 0,
-          controls: 0,
-          disablekb: 1,
-          fs: 0,
-          modestbranding: 1,
-          playsinline: 1,
-          rel: 0
-        },
-        events: {
-          onReady: (e) => {
-            ytReady = true;
-            e.target.cueVideoById({ videoId: VIDEO_ID, startSeconds: START_SECONDS });
-            e.target.setVolume(100);
-          }
-        }
-      });
-    };
-
     /* ---------- YES CLICK ---------- */
     yesBtn.addEventListener("click", () => {
       zone.style.display = "none";
       hint.style.display = "none";
       result.style.display = "block";
-
-      resizeConfettiCanvas();
-      fullScreenConfetti();
-
-      if (ytReady && ytPlayer) {
-        ytPlayer.seekTo(START_SECONDS, true);
-        ytPlayer.unMute();
-        ytPlayer.setVolume(100);
-        ytPlayer.playVideo();
-      } else {
-        window.open(`https://www.youtube.com/watch?v=${VIDEO_ID}&t=${START_SECONDS}s`, "_blank");
-      }
+      blastConfetti();
     });
   </script>
 </body>
 </html>
-
-
-
-
-
-
