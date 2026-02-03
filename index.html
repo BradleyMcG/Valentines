@@ -33,34 +33,41 @@
       padding: 16px;
     }
 
-    /* ---------- FLOATING HEART IMAGES ---------- */
+    /* ---------- HEART PHOTOS ---------- */
     .heart-img {
       position: fixed;
-      width: 120px;
-      aspect-ratio: 1;
+      width: 360px;              /* 3x bigger */
+      height: 360px;
       object-fit: cover;
-      clip-path: path(
-        "M60 110 C20 80 0 60 0 35
-         C0 15 15 0 35 0
-         C50 0 60 12 60 12
-         C60 12 70 0 85 0
-         C105 0 120 15 120 35
-         C120 60 100 80 60 110 Z"
+
+      /* HEART SHAPE (works on all browsers incl iOS) */
+      clip-path: polygon(
+        50% 90%,
+        10% 55%,
+        0% 35%,
+        10% 15%,
+        30% 10%,
+        50% 25%,
+        70% 10%,
+        90% 15%,
+        100% 35%,
+        90% 55%
       );
-      filter: drop-shadow(0 10px 20px rgba(0,0,0,.25));
+
+      filter: drop-shadow(0 18px 30px rgba(0,0,0,.35));
       pointer-events: none;
       z-index: 2;
       animation: float 6s ease-in-out infinite;
     }
 
-    .left.top    { left: 6vw;  top: 14vh; animation-delay: 0s; }
-    .left.bottom { left: 8vw;  bottom: 16vh; animation-delay: 1s; }
-    .right.top   { right: 6vw; top: 14vh; animation-delay: .5s; }
-    .right.bottom{ right: 8vw; bottom: 16vh; animation-delay: 1.5s; }
+    .left.top    { left: 2vw;  top: 10vh; animation-delay: 0s; }
+    .left.bottom { left: 4vw;  bottom: 10vh; animation-delay: 1s; }
+    .right.top   { right: 2vw; top: 10vh; animation-delay: .5s; }
+    .right.bottom{ right: 4vw; bottom: 10vh; animation-delay: 1.5s; }
 
     @keyframes float {
       0%,100% { transform: translateY(0); }
-      50% { transform: translateY(-14px); }
+      50% { transform: translateY(-18px); }
     }
 
     /* ---------- CONFETTI ---------- */
@@ -95,7 +102,6 @@
       width: min(520px, 92%);
       height: 150px;
       margin: 0 auto;
-      touch-action: none;
     }
 
     button {
@@ -117,7 +123,6 @@
       background: var(--yes);
       color: #fff;
     }
-
     #yesBtn:hover { background: var(--yesHover); }
 
     #noBtn {
@@ -138,17 +143,6 @@
       animation: pop .35s ease;
     }
 
-    .result h2 {
-      font-size: clamp(30px, 4.5vw, 46px);
-      margin: 10px 0;
-    }
-
-    .fireworks {
-      width: min(380px, 90vw);
-      margin: 0 auto;
-      display: block;
-    }
-
     @keyframes pop {
       from { transform: scale(.96); opacity: 0; }
       to { transform: scale(1); opacity: 1; }
@@ -159,13 +153,13 @@
 <body>
   <canvas id="confettiCanvas"></canvas>
 
-  <!-- HEART IMAGES -->
-  <img src="candi1.jpg" class="heart-img left top" />
-  <img src="candi2.jpg" class="heart-img left bottom" />
-  <img src="candi3.jpg" class="heart-img right top" />
-  <img src="candi4.jpg" class="heart-img right bottom" />
+  <!-- HEART PHOTOS -->
+  <img src="candi1.jpg" class="heart-img left top">
+  <img src="candi2.jpg" class="heart-img left bottom">
+  <img src="candi3.jpg" class="heart-img right top">
+  <img src="candi4.jpg" class="heart-img right bottom">
 
-  <!-- Hidden YouTube player -->
+  <!-- Hidden YouTube Player -->
   <div id="ytPlayer" style="position: fixed; left: -9999px; top: -9999px;"></div>
 
   <main class="card">
@@ -180,9 +174,6 @@
 
     <section class="result" id="result">
       <h2>YAY!!!!</h2>
-      <img class="fireworks"
-        src="https://media.giphy.com/media/26ufdipQqU2lhNA4g/giphy.gif"
-        alt="Fireworks" />
     </section>
   </main>
 
@@ -220,16 +211,6 @@
         });
         if (Date.now() < end) requestAnimationFrame(frame);
       })();
-
-      setTimeout(() => {
-        confettiInstance({
-          particleCount: 300,
-          spread: 140,
-          startVelocity: 60,
-          ticks: 220,
-          origin: { x: 0.5, y: 0.55 }
-        });
-      }, 300);
     }
 
     /* YES GROWS */
@@ -252,12 +233,8 @@
       let mag = Math.hypot(dx, dy) || 1;
       dx /= mag; dy /= mag;
 
-      let newLeft = (b.left - z.left) + dx * 150;
-      let newTop  = (b.top - z.top) + dy * 150;
-
-      noBtn.style.left = clamp(newLeft, 0, z.width - b.width) + "px";
-      noBtn.style.top  = clamp(newTop, 0, z.height - b.height) + "px";
-      noBtn.style.transform = "none";
+      noBtn.style.left = clamp((b.left - z.left) + dx * 150, 0, z.width - b.width) + "px";
+      noBtn.style.top  = clamp((b.top - z.top) + dy * 150, 0, z.height - b.height) + "px";
       growYes();
     }
 
@@ -275,17 +252,14 @@
     /* YOUTUBE */
     const VIDEO_ID = "N5PdvXVXh1c";
     const START_SECONDS = 20;
-    let ytPlayer, ytReady = false;
+    let ytPlayer;
 
     window.onYouTubeIframeAPIReady = () => {
       ytPlayer = new YT.Player("ytPlayer", {
         videoId: VIDEO_ID,
-        playerVars: { playsinline: 1 },
         events: {
           onReady: e => {
-            ytReady = true;
             e.target.cueVideoById({ videoId: VIDEO_ID, startSeconds: START_SECONDS });
-            e.target.setVolume(100);
           }
         }
       });
@@ -296,11 +270,7 @@
       hint.style.display = "none";
       result.style.display = "block";
       fullScreenConfetti();
-
-      if (ytReady) {
-        ytPlayer.seekTo(START_SECONDS, true);
-        ytPlayer.playVideo();
-      }
+      ytPlayer.playVideo();
     });
   </script>
 </body>
